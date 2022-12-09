@@ -1,0 +1,5 @@
+node_modules
+dist
+
+prettier.config.ts
+vite.config.ts
