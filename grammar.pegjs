@@ -1,47 +1,64 @@
+{
+	const data = {
+	    daysFromLastSelection: options.data.daysFromLastSelection,
+    	faithLevel: 1,
+        hapinessLevel: 2,
+        healthLevel: 3,
+        securityLevel: 4,
+        wealthLevel: 5,
+    }
+}
+
 Expression
-    = head:Factor yo:AssociatedFactor* {
-    switch (yo[0].asso) {
-        case "OR":
-            return head || yo[0].facto;
-        case "AND":
-            return head && yo[0].facto;
-    }
-}
+	= Statement
 
-AssociatedFactor
-    = ass:Association fact:Factor {
-    return { "asso":ass, "facto":fact };
-}
-
-Association "or and"
-    = _ asso:('or' / 'and' / 'OR' / 'AND') _ {
-        return asso.toString().toUpperCase();
-    }
-
-Factor
-    = "(" _ expr:Expression _ ")" { return expr; }
-        / Opertation
-
-Opertation
-    = tested:String _ operator:Operator _ expected:( CompareString / Integer) {
-    if (Object.keys(options.data).some(v => v == tested)) {
-        switch (operator) {
-            case "=":
-                return options.data[tested] === expected;
-            case "!=":
-                return options.data[tested] !== expected;
-            case "<":
-                return options.data[tested] < expected;
-            case ">":
-                return options.data[tested] > expected;
-            default:
-                return false;
+Statement
+	= _ "if (" _ ifElement:(Operation) _ ")"
+    _ "then (" _ thenElement:Integer _ ")"
+    elseIfElements:(_ "else if (" _ Operation _ ")" _ "then (" _ Integer _ ")")*
+    _ "else (" _ elseElement:Integer _ ")" {
+    	if (ifElement) {
+        	return thenElement;
         }
-    } else {
-      throw new Error(`This key: "${tested}" doesnt exist in the data object provided`);
+        if (elseIfElements && elseIfElements.length > 0) {
+        	const elseIfElement = elseIfElements.find((element) => {
+            	return element[3];
+            })
+            if (elseIfElement) {
+            	return elseIfElement[9];
+            }
+        }
+        return elseElement;
     }
-}
-CompareString
+
+Operation
+	= leftElement:Variable " " operator:Operator " " rightElement:(Primitive / Variable) {
+        switch (operator) {
+            case "==":
+                return leftElement === rightElement;
+            case "!=":
+                return leftElement !== rightElement;
+            case "<":
+                return leftElement < rightElement;
+            case "<=":
+                return leftElement <= rightElement;
+            case ">":
+                return leftElement > rightElement;
+            case ">=":
+                return leftElement <= rightElement;
+        }
+    }
+
+Operator
+	= "==" / "!=" / "<" / "<=" / ">" / ">="
+
+Primitive "primitive"
+	= Integer / String / Boolean
+
+Boolean "boolean"
+	= "true" { return true; } / "false" { return false; }
+
+String "string"
     = SingleQuoteString / DoubleQuoteString
 
 SingleQuoteString
@@ -50,14 +67,11 @@ SingleQuoteString
 DoubleQuoteString
     = '"' str:[0-9a-zA-Z.]+ '"' { return str.join(""); }
 
-Operator
-    = "=" / "!=" / "<" / ">"
-
-String "string"
-    = _ str:[0-9a-zA-Z.]+ {return str.join("")}
+Variable "variable"
+    = "#" key:[0-9a-zA-Z.]+ { return data[key.join("")]; }
 
 Integer "integer"
-    = _ [0-9]+ { return parseInt(text(), 10); }
+    = [0-9]+ { return parseInt(text(), 10); }
 
 _ "whitespace"
     = [ \t\n\r]*
