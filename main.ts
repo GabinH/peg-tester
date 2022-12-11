@@ -1,23 +1,30 @@
 import { parse } from "./generated_grammar";
 
-const data = {
-  daysFromLastSelection: 5
+const options = {
+  data: {
+    daysFromLastSelection: 5
+  },
+  output: null
 };
 
 console.log(
   "Testing : ",
   JSON.stringify(
     parse(
-      `if (#daysFromLastSelection > 4)
-then (60)
+      `
+if (#daysFromLastSelection > 4)
+then (#test => 60)
 
 else if (#daysFromLastSelection > 2)
-then (40)
+then (#test => 40)
 
-else (20)`,
-      { data }
+else (#test => 20)
+`,
+      options
     ),
     null,
     2
   )
 );
+
+console.log("output : ", options.output);
