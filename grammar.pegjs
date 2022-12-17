@@ -1,12 +1,14 @@
-{
-	options.output = {};
-}
-
 Expression
-	= Statement / Mutation / Primitive
+	= expressions:(Statement / Mutation / Primitive)* {
+        const output = {};
+        expressions.forEach((expression) => {
+            Object.assign(output, expression);
+        });
+        return output;
+    }
 
 Mutation
-	= _ name:VariableName " => " value:Integer { return () => (options.output[name] = value); }
+	= _ name:VariableName " => " value:Integer { return {[name]: value}; }
 
 Statement
 	= _ "if (" _ ifElement:(Operation / Boolean) _ ")"
@@ -58,7 +60,7 @@ VariableName "variable name"
     = "#" key:[0-9a-zA-Z.]+ { return key.join(""); }
 
 Primitive "primitive"
-	= Integer / String / Boolean
+	= Integer / Boolean
 
 Boolean "boolean"
 	= "true" { return true; } / "false" { return false; }

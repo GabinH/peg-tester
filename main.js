@@ -1,19 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const generated_grammar_1 = require("./generated_grammar");
-const options = {
-    data: {
-        daysFromLastSelection: 5
-    },
-    output: null
-};
+const options = {};
 console.log("Testing : ", JSON.stringify((0, generated_grammar_1.parse)(`
-if (#daysFromLastSelection > 4)
-then (#test => 60)
+#foo => 5
+#bar => 5
+if (false)
+then (#aaa => 5)
 
-else if (#daysFromLastSelection > 2)
-then (#test => 40)
+else if (true)
+then (
 
-else (#test => 20)
+if (true)
+then (#ccc => 5)
+else (#ddd => 8)
+
+)
+
+else (#bbb => 6)
 `, options), null, 2));
-console.log("output : ", options.output);
